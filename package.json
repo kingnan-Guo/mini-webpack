@@ -1,0 +1,20 @@
+{
+  "name": "mini-webpack",
+  "version": "1.0.0",
+  "description": "webpack 实现",
+  "main": "index.js",
+  "type": "module",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/parser": "^7.21.4",
+    "@babel/traverse": "^7.21.4"
+  }
+}
