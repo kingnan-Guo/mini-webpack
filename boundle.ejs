@@ -1,0 +1,27 @@
+
+(function (modules) {
+    function _webpack_require(filePath){
+        const fn = modules[filePath]
+        const module = {
+            exports:{}
+        }
+        fn(_webpack_require, module, module.exports)
+        return module.exports
+    }
+    
+    _webpack_require("./main.js")
+
+})({
+    <% data.forEach((info)=>{ %>
+        
+        "<%= info["filePath"] %>": function (_webpack_require, module, exports) {
+            <%- info["code"] %>
+        },
+    <% })  %>
+
+
+});
+
+
+
+    

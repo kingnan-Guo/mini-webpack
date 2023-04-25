@@ -12,3 +12,6 @@ webpack 实现
 
 
   "type": "module", 支持 esm 模块
+
+
+    使用 ejs 生成 模版

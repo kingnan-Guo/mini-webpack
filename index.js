@@ -3,6 +3,10 @@ import parser from "@babel/parser";
 import traverse from "@babel/traverse";
 import { log } from "console";
 import path from "path";
+import ejs from "ejs";
+import { transformFromAst } from "babel-core"
+
+
 /**
  * 
  * 1、获取内容
@@ -24,14 +28,19 @@ function createAsset(filePath) {
     traverse.default(ast, {
       // 当调用到 ImportDeclaration  节点的时候 会调用到 ImportDeclaration()函数
       ImportDeclaration({ node }) {
-        log("ImportDeclaration--------\n", node.source.value);
+        // log("ImportDeclaration--------\n", node.source.value);
         deps.push(node.source.value)
       }
     });
 
+    const code = transformFromAst(ast, null, {
+      presets: ["env"]
+    })
+
     return {
       filePath,
-      source,
+      // source,
+      code,
       deps
     }
 }
@@ -57,4 +66,27 @@ function createGraph() {
   return queue
 }
 const graph = createGraph()
-log(graph)
+// log(graph)
+
+
+function build(graph) {
+  // 使用ejs 生成文件
+  const template = fs.readFileSync('./boundle.ejs', {
+    encoding: 'utf-8'
+  })
+
+
+  const data = graph.map((asset)=>{
+    return {
+      filePath: asset.filePath,
+      code: asset.code.code
+    }
+  })
+  console.log(data)
+
+  const code = ejs.render(template, {data})
+  fs.writeFileSync("./dist/boundle.js", code)
+  // console.log(code);
+  
+}
+build(graph)
