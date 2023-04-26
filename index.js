@@ -5,8 +5,18 @@ import { log } from "console";
 import path from "path";
 import ejs from "ejs";
 import { transformFromAst } from "babel-core"
-
+import { jsonLoader } from "./jsonLoader.js";
 let id = 0
+
+const webpackConfig = {
+  module:{
+    rulers:[{
+      test:/\.json$/,
+      use:[jsonLoader],
+    }]
+  }
+}
+
 /**
  * 
  * 1、获取内容
@@ -15,9 +25,37 @@ let id = 0
  */
 function createAsset(filePath) {
     //  1、获取内容
-    const source = fs.readFileSync(filePath, {
+    let source = fs.readFileSync(filePath, {
       encoding: "utf-8"
     })
+    console.log(" ------ source -----");
+    log(source)
+    // 在此处 接收到的 source 进行转换 ，但现在只转换 json
+    const loaders = webpackConfig.module.rulers
+    const loaderContext = {
+      addDeps(dep){
+        console.log("addDeps", dep);
+      }
+    }
+    loaders.forEach(({test, use}) => {
+        // 匹配正则
+        if (test.test(filePath)) {
+          if (Array.isArray(use)) {
+            // loader 从后向前 执行 ,所以 reverse
+            console.log("use =", use);
+            use.reverse().forEach((fn) => {
+              source = fn.call(loaderContext, source)
+            })
+          } else {
+            source = use.call(loaderContext, source)
+          }
+          
+        }
+    });
+
+
+
+
     // 2、获取对应的依赖关系
     const ast = parser.parse(source, {
       sourceType: "module"
@@ -72,7 +110,7 @@ function createGraph() {
 }
 const graph = createGraph()
 log("------------graph------------------")
-log(graph)
+// log(graph)
 
 
 function build(graph) {
@@ -91,11 +129,11 @@ function build(graph) {
       mapping: mapping
     }
   })
-  console.log(data)
+  // console.log(data)
 
   const code = ejs.render(template, {data})
   fs.writeFileSync("./dist/boundle.js", code)
-  console.log(code);
+  // console.log(code);
   
 }
 build(graph)
