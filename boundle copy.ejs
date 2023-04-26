@@ -1,0 +1,33 @@
+
+(function (modules) {
+    function _webpack_require(id){
+        const [fn, mapping] = modules[id]
+        const module = {
+            exports:{}
+        }
+        function localRequire(filePath) {
+            const id = mapping[filePath];
+            return  _webpack_require(id)
+        }
+        fn(localRequire, module, module.exports)
+        return module.exports
+    }
+    _webpack_require(0)
+
+})({
+    <% data.forEach((info)=>{ %>
+        
+        "<%= info["id"] %>": 
+            [function (_webpack_require, module, exports) {
+                <%- info["code"] %>
+            },
+            <%- JSON.stringify(info["mapping"]) %>
+            ],
+    <% })  %>
+
+
+});
+
+
+
+    
