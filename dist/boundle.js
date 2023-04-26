@@ -1,21 +1,25 @@
 
 (function (modules) {
-    function _webpack_require(filePath){
-        const fn = modules[filePath]
+    function require(id){
+        const [fn, mapping] = modules[id]
         const module = {
             exports:{}
         }
-        fn(_webpack_require, module, module.exports)
+        function localRequire(filePath) {
+            const id = mapping[filePath];
+            return  require(id)
+        }
+        fn(localRequire, module, module.exports)
         return module.exports
     }
-    
-    _webpack_require("./main.js")
+    require(0)
 
 })({
     
         
-        "./example/main.js": function (_webpack_require, module, exports) {
-            "use strict";
+        "0": 
+            [function (require, module, exports) {
+                "use strict";
 
 var _foo = require("./foo.js");
 
@@ -24,14 +28,19 @@ var _foo2 = _interopRequireDefault(_foo);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // const  a = request("./foo")
-(0, _foo2.default)(); // import { request } from "http";
+_foo2.default.foo(); // import { request } from "http";
+// import {foo} from "./foo.js";
+
 
 console.log("--main--");
-        },
+            },
+            {"./foo.js":1}
+            ],
     
         
-        "/Users/kingnan/Documents/github/mini-webpack/example/foo.js": function (_webpack_require, module, exports) {
-            "use strict";
+        "1": 
+            [function (require, module, exports) {
+                "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -42,13 +51,28 @@ var _bar = require("bar.js");
 
 function foo() {
   console.log("--- foo ---");
+  (0, _bar.bar)();
 }
-        },
+            },
+            {"bar.js":2}
+            ],
     
         
-        "/Users/kingnan/Documents/github/mini-webpack/example/bar.js": function (_webpack_require, module, exports) {
-            "use strict";
-        },
+        "2": 
+            [function (require, module, exports) {
+                "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.bar = bar;
+
+function bar(params) {
+  console.log("-- bar --");
+}
+            },
+            {}
+            ],
     
 
 
