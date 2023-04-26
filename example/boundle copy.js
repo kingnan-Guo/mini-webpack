@@ -7,40 +7,29 @@
  * 
  */
 (function (modules) {
-    function _webpack_require(id){
+    function _webpack_require(filePath){
         // const map = {
         //     "./foo.js": foojs,
         //     "./main.js": mainjs
         // }
-        
-        // const fn = modules[filePath]
-        const [fn, mapping] = modules[id]
+        const fn = modules[filePath]
         const module = {
             exports:{}
         }
-        function localRequire(filePath) {
-            console.log("localRequire = filePath =", filePath);
-            const id = mapping[filePath];
-            return  _webpack_require(id)
-        }
-
-
-        fn(localRequire, module, module.exports)
+        fn(_webpack_require, module, module.exports)
         return module.exports
     }
     
     _webpack_require("./main.js")
 
 })({
-    1:[ function (_webpack_require, module, exports) {
+    "./main.js": function (_webpack_require, module, exports) {
         // import foo from "./foo.js";
         const {foo} = _webpack_require("./foo.js")
         foo()
         console.log("--main--");
-    }, {
-        "./foo.js": 2
-    }],
-    2: [function (_webpack_require, module, exports) {
+    },
+    "./foo.js": function (_webpack_require, module, exports) {
         // export function foo(){
         //     console.log("foo");
         // }
@@ -50,7 +39,7 @@
         module.exports = {
             foo
         }
-    }, {}]
+    }
 })
 
 

@@ -6,7 +6,7 @@ import path from "path";
 import ejs from "ejs";
 import { transformFromAst } from "babel-core"
 
-
+let id = 0
 /**
  * 
  * 1、获取内容
@@ -25,6 +25,7 @@ function createAsset(filePath) {
     // console.log(ast);
     // 存储依赖关系 dep
     const deps = []
+    // esm -> cjs
     traverse.default(ast, {
       // 当调用到 ImportDeclaration  节点的时候 会调用到 ImportDeclaration()函数
       ImportDeclaration({ node }) {
@@ -36,12 +37,15 @@ function createAsset(filePath) {
     const code = transformFromAst(ast, null, {
       presets: ["env"]
     })
-
+    // log("------------code------------------")
+    // console.log(code);
     return {
       filePath,
       // source,
       code,
-      deps
+      deps,
+      id: id++,
+      mapping: {}
     }
 }
 
@@ -60,13 +64,15 @@ function createGraph() {
       // example/foo.js
       const child = createAsset(path.resolve("./example", relativePath))
       // log(child)
+      asset.mapping[relativePath] = child.id
       queue.push(child)
     });
   }
   return queue
 }
 const graph = createGraph()
-// log(graph)
+log("------------graph------------------")
+log(graph)
 
 
 function build(graph) {
@@ -77,16 +83,19 @@ function build(graph) {
 
 
   const data = graph.map((asset)=>{
+    const {filePath, code, id, mapping} = asset
     return {
-      filePath: asset.filePath,
-      code: asset.code.code
+      filePath: filePath,
+      code: code.code,
+      id: id,
+      mapping: mapping
     }
   })
   console.log(data)
 
   const code = ejs.render(template, {data})
   fs.writeFileSync("./dist/boundle.js", code)
-  // console.log(code);
+  console.log(code);
   
 }
 build(graph)

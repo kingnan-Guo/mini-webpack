@@ -1,22 +1,28 @@
 
 (function (modules) {
-    function _webpack_require(filePath){
-        const fn = modules[filePath]
+    function require(id){
+        const [fn, mapping] = modules[id]
         const module = {
             exports:{}
         }
-        fn(_webpack_require, module, module.exports)
+        function localRequire(filePath) {
+            const id = mapping[filePath];
+            return  require(id)
+        }
+        fn(localRequire, module, module.exports)
         return module.exports
     }
-    
-    _webpack_require("./main.js")
+    require(0)
 
 })({
     <% data.forEach((info)=>{ %>
         
-        "<%= info["filePath"] %>": function (_webpack_require, module, exports) {
-            <%- info["code"] %>
-        },
+        "<%= info["id"] %>": 
+            [function (require, module, exports) {
+                <%- info["code"] %>
+            },
+            <%- JSON.stringify(info["mapping"]) %>
+            ],
     <% })  %>
 
 
