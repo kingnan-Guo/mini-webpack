@@ -6,6 +6,8 @@ import path from "path";
 import ejs from "ejs";
 import { transformFromAst } from "babel-core"
 import { jsonLoader } from "./jsonLoader.js";
+import { changeOutPutPath } from "./changeOutPutPath.js";
+import { SyncHook } from "tapable";
 let id = 0
 
 const webpackConfig = {
@@ -14,7 +16,12 @@ const webpackConfig = {
       test:/\.json$/,
       use:[jsonLoader],
     }]
-  }
+  },
+  plugins:[new changeOutPutPath()]
+}
+
+const hooks = {
+  emitFlie: new SyncHook(["context"])
 }
 
 /**
@@ -113,6 +120,17 @@ log("------------graph------------------")
 // log(graph)
 
 
+/**
+ * 初始话plugin
+ */
+function initPlugins() {
+  const plugins = webpackConfig.plugins
+  plugins.forEach((plugin) => {
+    plugin.apply(hooks)
+  });
+}
+initPlugins()
+
 function build(graph) {
   // 使用ejs 生成文件
   const template = fs.readFileSync('./boundle.ejs', {
@@ -132,7 +150,20 @@ function build(graph) {
   // console.log(data)
 
   const code = ejs.render(template, {data})
-  fs.writeFileSync("./dist/boundle.js", code)
+
+
+  let outPutPath  = "./dist/boundle.js"
+  const context = {
+    changeOutPutPath(path){
+      console.log("changeOutPutPath =", path);
+      outPutPath = path
+    }
+  }
+  hooks.emitFlie.call(context)
+
+
+  
+  fs.writeFileSync(outPutPath, code)
   // console.log(code);
   
 }
